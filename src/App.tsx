@@ -4,7 +4,7 @@ import { start } from "repl";
 import { styled } from "styled-components";
 
 const Wrapper = styled(motion.div)`
-  height: 150vh;
+  height: 200vh;
   width: 100vw;
   display: grid;
 `;
@@ -27,10 +27,6 @@ const SlideBox = styled(Box)`
   align-items: center;
   background-color: white;
   font-size: 28px;
-  position: absolute;
-  bottom: -390px;
-  right: 40%;
-  left: 40%;
 `;
 
 const Box2 = styled(motion.div)`
@@ -59,6 +55,23 @@ const Box3 = styled(motion.div)`
   margin: 0 auto;
 `;
 
+const Box4 = styled.div`
+  width: 200px;
+  height: 200px;
+  background-color: white;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0px 0px 30px gray;
+`;
+
+const Box5 = styled(motion.div)`
+  background-color: white;
+  border-radius: 20px;
+  height: 100px;
+`;
+
 const MiniBox = styled(motion.div)`
   width: 100px;
   height: 100px;
@@ -75,10 +88,38 @@ const Circle = styled(motion.div)`
   box-shadow: 10px 10px 30px gray;
 `;
 
+const Circle2 = styled(motion.div)`
+  background-color: #00a5ff;
+  border-radius: 50px;
+  width: 50px;
+  height: 50px;
+`;
+
 const Button = styled.button`
   width: 80px;
   height: 30px;
   margin: 0 auto;
+`;
+
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  width: 90vw;
+  div:first-child,
+  div:last-child {
+    grid-column: span 2;
+  }
+  gap: 10px;
+  margin: 0 auto;
+`;
+
+const Overlay = styled(motion.div)`
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const myVars = {
@@ -154,34 +195,50 @@ const showBoxVarian = {
 };
 
 const slideBox = {
-  invisible: {
-    x: 500,
+  entry: (back: boolean) => ({
+    x: back ? -500 : 500,
     opacity: 0,
     scale: 0,
-  },
-  visible: {
+  }),
+  center: {
     x: 0,
     opacity: 1,
     scale: 1,
     transition: {
-      duration: 0.5,
+      duration: 0.2,
     },
   },
-  exit: {
-    x: -500,
+  exit: (back: boolean) => ({
+    x: back ? 500 : -500,
     opacity: 0,
     scale: 0,
     transition: {
-      duration: 0.5,
+      duration: 0.2,
     },
-  },
+  }),
 };
 
 function App() {
   const [showing, setShowing] = useState(false);
   const toggleShowing = () => setShowing((p) => !p);
   const [visible, setVisible] = useState(1);
-  const nextPlease = () => setVisible((p) => (p === 10 ? 1 : p + 1));
+  const [back, setBack] = useState(false);
+  const nextPlease = () => {
+    setBack(false);
+    setVisible((p) => (p >= 10 ? 1 : p + 1));
+  };
+  const prePlease = () => {
+    setBack(true);
+    setVisible((p) => (p <= 1 ? 10 : p - 1));
+  };
+
+  const [scaleClicked, setScaleClicked] = useState(false);
+  const scaleToggle = () => setScaleClicked((p) => !p);
+
+  const [clicked, setClicked] = useState(false);
+  const toggleClicked = () => setClicked((p) => !p);
+
+  const [id, setId] = useState<null | string>(null);
 
   const bigBoxRef = useRef<HTMLDivElement>(null);
   const x = useMotionValue(0);
@@ -232,18 +289,39 @@ function App() {
       <AnimatePresence>{showing ? <Box style={{ background: "white" }} variants={showBoxVarian} initial="initial" animate="visible" exit="leaving" /> : null}</AnimatePresence>
       <Button onClick={toggleShowing}>Click</Button>
 
+      <div>
+        <AnimatePresence mode="wait" custom={back}>
+          <SlideBox custom={back} variants={slideBox} initial="entry" animate="center" exit="exit" key={visible}>
+            {visible}
+          </SlideBox>
+        </AnimatePresence>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Button style={{ float: "left" }} onClick={prePlease}>
+            prev
+          </Button>
+          <Button style={{ float: "right" }} onClick={nextPlease}>
+            next
+          </Button>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <Box4 onClick={toggleClicked}>{!clicked ? <Circle2 layoutId="circle" style={{ borderRadius: 50, rotate: 0 }} /> : null}</Box4>
+        <Box4 onClick={toggleClicked}>{clicked ? <Circle2 layoutId="circle" style={{ borderRadius: 0, rotate: 180, scale: 2 }} /> : null}</Box4>
+      </div>
+
+      <Grid>
+        {["1", "2", "3", "4"].map((n) => (
+          <Box5 key={n} onClick={() => setId(n)} layoutId={n} />
+        ))}
+      </Grid>
       <AnimatePresence>
-        {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((v) =>
-          visible === v ? (
-            <SlideBox variants={slideBox} initial="invisible" animate="visible" exit="exit" key={v}>
-              {v}
-            </SlideBox>
-          ) : null
-        )}
+        {id ? (
+          <Overlay onClick={() => setId(null)} initial={{ background: "rgba(0, 0, 0, 0.5)", opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <Box5 layoutId={id} style={{ width: "80vw", height: "20vh" }} />
+          </Overlay>
+        ) : null}
       </AnimatePresence>
-      <Button style={{ marginTop: "300px" }} onClick={nextPlease}>
-        next
-      </Button>
     </Wrapper>
   );
 }
