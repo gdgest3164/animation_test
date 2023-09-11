@@ -1,10 +1,10 @@
 {
   "files": {
-    "main.js": "/animation_test/static/js/main.d20aff84.js",
+    "main.js": "/animation_test/static/js/main.d585dc32.js",
     "index.html": "/animation_test/index.html",
-    "main.d20aff84.js.map": "/animation_test/static/js/main.d20aff84.js.map"
+    "main.d585dc32.js.map": "/animation_test/static/js/main.d585dc32.js.map"
   },
   "entrypoints": [
-    "static/js/main.d20aff84.js"
+    "static/js/main.d585dc32.js"
   ]
 }
